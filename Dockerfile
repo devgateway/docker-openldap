@@ -1,6 +1,11 @@
 FROM alpine:3.8
 
+ARG OPENLDAP_VERSION=2.4.46
+
 RUN set -ex \
+  && wget ftp://ftp.openldap.org/pub/OpenLDAP/openldap-release/openldap-${OPENLDAP_VERSION}.tgz \
+  && tar -xf openldap-${OPENLDAP_VERSION}.tgz \
+  && cd openldap-${OPENLDAP_VERSION} \
   && apk add \
     cyrus-sasl \
     openssl \
@@ -24,3 +29,4 @@ RUN set -ex \
   && make \
   && make test \
   && make install
+  && apk del .build-deps
