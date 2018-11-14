@@ -28,5 +28,5 @@ RUN set -ex \
     --with-tls=openssl \
   && make \
   && make test \
-  && make install
+  && make install \
   && apk del .build-deps
