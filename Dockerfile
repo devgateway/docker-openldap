@@ -23,6 +23,12 @@ RUN set -x; \
   && ./configure \
     --prefix= \
     --exec-prefix=/usr \
+    --mandir=$(pwd) \
+    --includedir=$(pwd) \
+    --oldincludedir=$(pwd) \
+    --enable-dynamic \
+    --disable-static \
+    --disable-syslog \
     --enable-ipv6 \
     --enable-bdb=no \
     --enable-hdb=no \
