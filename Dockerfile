@@ -13,6 +13,7 @@ RUN set -ex \
     gcc \
     make \
     groff \
+    bash \
     libc-dev \
     cyrus-sasl-dev \
     openssl-dev \
