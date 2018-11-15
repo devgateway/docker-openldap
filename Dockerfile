@@ -5,11 +5,8 @@ ARG OPENLDAP_MIRROR=ftp://ftp.openldap.org/pub/OpenLDAP/openldap-release
 
 RUN apk add cyrus-sasl openssl
 
-RUN set -ex \
-  && wget -nv ${OPENLDAP_MIRROR}/openldap-${OPENLDAP_VERSION}.tgz \
-  && tar -xf openldap-${OPENLDAP_VERSION}.tgz \
-  && cd openldap-${OPENLDAP_VERSION} \
-  && apk add --no-cache --virtual .build-deps \
+RUN set -x; \
+  apk add --no-cache --virtual .build-deps \
     gcc \
     make \
     groff \
@@ -17,6 +14,9 @@ RUN set -ex \
     libc-dev \
     cyrus-sasl-dev \
     openssl-dev \
+  && wget --proxy on ${OPENLDAP_MIRROR}/openldap-${OPENLDAP_VERSION}.tgz \
+  && tar -xf openldap-${OPENLDAP_VERSION}.tgz \
+  && cd openldap-${OPENLDAP_VERSION} \
   && ./configure \
     --prefix= \
     --exec-prefix=/usr \
@@ -30,5 +30,6 @@ RUN set -ex \
   && make \
   && make test \
   && make install \
-  && apk del .build-deps \
-  && rm -rf openldap-${OPENLDAP_VERSION}.tgz openldap-${OPENLDAP_VERSION}
+  && cd .. \
+  && rm -rf openldap-${OPENLDAP_VERSION}.tgz openldap-${OPENLDAP_VERSION} \
+  && apk del .build-deps
