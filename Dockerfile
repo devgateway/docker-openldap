@@ -20,6 +20,7 @@ RUN set -x; \
   && wget --proxy on ${OPENLDAP_MIRROR}/openldap-${OPENLDAP_VERSION}.tgz \
   && tar -xf openldap-${OPENLDAP_VERSION}.tgz \
   && cd openldap-${OPENLDAP_VERSION} \
+  && export CFLAGS='-O2 -fPIE -s' \
   && ./configure \
     --prefix= \
     --exec-prefix=/usr \
