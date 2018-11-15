@@ -3,7 +3,10 @@ FROM alpine:3.8
 ARG OPENLDAP_VERSION=2.4.46
 ARG OPENLDAP_MIRROR=ftp://ftp.openldap.org/pub/OpenLDAP/openldap-release
 
-RUN apk add cyrus-sasl openssl
+RUN set -x; \
+  apk add --no-cache cyrus-sasl openssl \
+  && addgroup -S -g 900 ldap \
+  && adduser -S -G ldap -D -h /var/lib/ldap -u 900 ldap
 
 RUN set -x; \
   apk add --no-cache --virtual .build-deps \
