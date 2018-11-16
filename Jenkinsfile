@@ -31,8 +31,9 @@ pipeline {
           steps {
             script {
               docker.withRegistry('http://localhost:5000') {
-                def image = docker.image("${IMAGE}")
-                image.withRun("-v ${env.WORKSPACE}/tests/a:/var/lib/ldap:rw") {
+                def mount = "${env.WORKSPACE}/tests/a:/var/lib/ldap:rw"
+                docker.image("${IMAGE}").inside("-v ${mount}") {
+                  sh "slapcat -n0"
                 }
               }
             }
