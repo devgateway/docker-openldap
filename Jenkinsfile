@@ -11,16 +11,16 @@ pipeline {
 
   stages {
 
-        stage('Build') {
-          steps {
-            script {
-              def image = docker.build("devgateway/${APP_NAME}:${env.BRANCH_NAME}")
-              docker.withRegistry('http://localhost:5000') {
-                image.push()
-              }
-            }
+    stage('Build') {
+      steps {
+        script {
+          def image = docker.build("devgateway/${APP_NAME}:${env.BRANCH_NAME}")
+          docker.withRegistry('http://localhost:5000') {
+            image.push()
           }
         }
+      }
+    }
 
   } // stages
 
