@@ -4,7 +4,7 @@ ARG OPENLDAP_VERSION=2.4.46
 ARG OPENLDAP_MIRROR=ftp://ftp.openldap.org/pub/OpenLDAP/openldap-release
 
 RUN set -x; \
-  apk add --no-cache cyrus-sasl openssl \
+  apk add --no-cache libsasl libressl2.7-libssl \
   && addgroup -S -g 900 ldap \
   && adduser -S -G ldap -D -h /var/lib/ldap -u 900 ldap
 
@@ -16,7 +16,7 @@ RUN set -x; \
     bash \
     libc-dev \
     cyrus-sasl-dev \
-    openssl-dev \
+    libressl-dev \
   && wget --proxy on ${OPENLDAP_MIRROR}/openldap-${OPENLDAP_VERSION}.tgz \
   && tar -xf openldap-${OPENLDAP_VERSION}.tgz \
   && cd openldap-${OPENLDAP_VERSION} \
