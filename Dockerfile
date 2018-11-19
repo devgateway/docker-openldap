@@ -53,3 +53,6 @@ RUN set -x; \
 
 VOLUME /var/lib/ldap
 VOLUME /etc/openldap/config
+
+EXPOSE 389
+EXPOSE 636
