@@ -42,4 +42,7 @@ RUN set -x; \
   && make install \
   && cd .. \
   && rm -rf openldap-${OPENLDAP_VERSION}.tgz openldap-${OPENLDAP_VERSION} \
-  && apk del .build-deps
+  && apk del .build-deps \
+  && rm -rf /etc/openldap \
+  && mkdir -p -m 0750 /etc/openldap/slapd.d \
+  && chown ldap:ldap /etc/openldap/slapd.d
