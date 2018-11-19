@@ -43,6 +43,10 @@ RUN set -x; \
   && cd .. \
   && rm -rf openldap-${OPENLDAP_VERSION}.tgz openldap-${OPENLDAP_VERSION} \
   && apk del .build-deps \
-  && rm -rf /etc/openldap \
-  && mkdir -p -m 0750 /etc/openldap/slapd.d \
-  && chown ldap:ldap /etc/openldap/slapd.d
+  && rm -f /etc/openldap/slapd.conf \
+  && for dir in /etc/openldap/slapd.d /etc/openldap/config /var/lib/ldap; do \
+      mkdir -p -m 0750 "$dir" && chown ldap:ldap "$dir"; \
+    done
+
+VOLUME /var/lib/ldap
+VOLUME /etc/openldap/config
