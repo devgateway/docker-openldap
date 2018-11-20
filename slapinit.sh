@@ -2,7 +2,18 @@
 DATA_ROOT=/etc/openldap/config
 
 echo Initializing cn=config database
-slapadd -n 0 -l config.ldif
+slapadd -n 0 <<EOF
+dn: cn=config
+objectClass: olcGlobal
+cn: config
+
+dn: olcDatabase={0}config,cn=config
+objectClass: olcDatabaseConfig
+olcDatabase: {0}config
+olcAccess: to dn.subtree="cn=config"
+  by dn=gidNumber=900+uidNumber=900,cn=peercred,cn=external,cn=auth manage
+  by * none
+EOF
 
 echo Loading bundled schemas
 for LDIF in /etc/openldap/schema/*.ldif; do
