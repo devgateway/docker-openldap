@@ -21,9 +21,9 @@ olcAccess: to dn.subtree="cn=config"
 EOF
 
 echo Loading bundled schemas
-for LDIF in /etc/openldap/schema/*.ldif; do
-  slapadd -F "$SLAPDD_DIR" -n 0 -l "$LDIF"
-done
+slapadd -F "$SLAPDD_DIR" -n 0 -l /etc/openldap/schema/core.ldif
+find /etc/openldap/schema -type f -name '*.ldif' ! -name core.ldif -print0 \
+  | xargs -0 -n 1 slapadd -F "$SLAPDD_DIR" -n 0 -l
 
 if [ -d "$DATA_ROOT" ]; then
   echo Starting slapd on a local socket
