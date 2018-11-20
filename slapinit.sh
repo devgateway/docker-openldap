@@ -8,7 +8,7 @@ if [ "$1" != "slapd" ]; then
 fi
 
 echo Initializing cn=config database
-su -c "slapadd -F '$SLAPDD_DIR' -n 0" ldap <<EOF
+su -s /usr/sbin/slapadd -- ldap -F "$SLAPDD_DIR" -n 0 <<EOF
 dn: cn=config
 objectClass: olcGlobal
 cn: config
@@ -23,7 +23,7 @@ EOF
 
 echo Loading bundled schemas
 for SCHEMA in $PRELOAD_SCHEMAS; do
-  su -c "slapadd -F '$SLAPDD_DIR' -n 0 -l '/etc/openldap/schema/$SCHEMA.ldif'" ldap
+  su -s /usr/sbin/slapadd -- ldap -F "$SLAPDD_DIR" -n 0 -l "/etc/openldap/schema/$SCHEMA.ldif"
 done
 
 if [ -d "$DATA_ROOT" ]; then
