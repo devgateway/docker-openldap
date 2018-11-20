@@ -50,7 +50,7 @@ if [ -d "$DATA_ROOT" ]; then
 
   echo Stopping slapd
   kill %1
-  wait %1
+  wait
 fi
 
 # TODO: listen protocols
