@@ -51,6 +51,13 @@ RUN set -x; \
       mkdir -p -m 0750 "$dir" && chown ldap:ldap "$dir"; \
     done
 
+COPY slapinit.sh /slapinit.sh
+
+USER ldap
+WORKDIR /var/lib/ldap
+
+ENTRYPOINT ["/slapinit.sh", "slapd"]
+
 VOLUME /var/lib/ldap
 VOLUME /etc/openldap/config
 

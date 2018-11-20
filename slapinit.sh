@@ -1,6 +1,10 @@
 #!/bin/sh -ex
 DATA_ROOT=/etc/openldap/config
 
+if [ "$1" != 'slapd' ]; then
+  exec "$@"
+fi
+
 echo Initializing cn=config database
 slapadd -n 0 <<EOF
 dn: cn=config
