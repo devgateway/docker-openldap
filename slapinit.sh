@@ -1,12 +1,13 @@
 #!/bin/sh -ex
 DATA_ROOT=/etc/openldap/config
+SLAPDD_DIR=/etc/openldap/slapd.d
 
 if [ "$1" != 'slapd' ]; then
   exec "$@"
 fi
 
 echo Initializing cn=config database
-slapadd -n 0 <<EOF
+slapadd -F "$SLAPDD_DIR" -n 0 <<EOF
 dn: cn=config
 objectClass: olcGlobal
 cn: config
@@ -21,12 +22,12 @@ EOF
 
 echo Loading bundled schemas
 for LDIF in /etc/openldap/schema/*.ldif; do
-  slapadd -n 0 -l "$LDIF"
+  slapadd -F "$SLAPDD_DIR" -n 0 -l "$LDIF"
 done
 
 if [ -d "$DATA_ROOT" ]; then
   echo Starting slapd on a local socket
-  /usr/libexec/slapd -h ldapi:/// -d 0 &
+  /usr/libexec/slapd -F "$SLAPDD_DIR" -h ldapi:/// -d 0 &
   until [ -S "/run/ldapi" ]; do
     echo "Waiting for socket $1"
     sleep 1
@@ -52,4 +53,4 @@ if [ -d "$DATA_ROOT" ]; then
 fi
 
 # TODO: listen protocols
-exec /usr/libexec/slapd -h "ldapi:/// ldap:///" -d Stats
+exec /usr/libexec/slapd -F "$SLAPDD_DIR" -h "ldapi:/// ldap:///" -d Stats
