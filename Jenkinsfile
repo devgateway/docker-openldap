@@ -27,12 +27,11 @@ pipeline {
       failFast true
       parallel {
 
-        stage('Test A') {
+        stage('Smoke test') {
           steps {
             script {
               docker.withRegistry('http://localhost:5000') {
-                def mount = "${env.WORKSPACE}/tests/a:/var/lib/ldap:rw"
-                docker.image("${IMAGE}").inside("-v ${mount}") {
+                docker.image("${IMAGE}").inside('-u root') {
                   sh "slapcat -n0"
                 }
               }
