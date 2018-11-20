@@ -53,7 +53,6 @@ RUN set -x; \
 
 COPY slapinit.sh /slapinit.sh
 
-USER ldap
 WORKDIR /var/lib/ldap
 
 ENTRYPOINT ["/slapinit.sh"]
