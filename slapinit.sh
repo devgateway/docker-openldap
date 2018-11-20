@@ -1,11 +1,11 @@
 #!/bin/sh -ex
-DATA_ROOT=/etc/openldap/config
-SLAPDD_DIR=/etc/openldap/slapd.d
-: ${PRELOAD_SCHEMAS:=core cosine dyngroup inetorgperson misc nis ppolicy}
-
 if [ "$1" != "slapd" ]; then
   exec "$@"
 fi
+
+DATA_ROOT=/etc/openldap/config
+SLAPDD_DIR=/etc/openldap/slapd.d
+: ${PRELOAD_SCHEMAS:=core cosine dyngroup inetorgperson misc nis ppolicy}
 
 echo Initializing cn=config database
 su -s /usr/sbin/slapadd -- ldap -F "$SLAPDD_DIR" -n 0 <<EOF
