@@ -6,6 +6,7 @@ fi
 DATA_ROOT=/etc/openldap/config
 SLAPDD_DIR=/etc/openldap/slapd.d
 : ${PRELOAD_SCHEMAS:=core cosine dyngroup inetorgperson misc nis ppolicy}
+: ${LISTEN_URIS:=ldap:///}
 
 echo Initializing cn=config database
 su -s /usr/sbin/slapadd -- ldap -F "$SLAPDD_DIR" -n 0 <<EOF
@@ -53,5 +54,4 @@ if [ -d "$DATA_ROOT" ]; then
   wait
 fi
 
-# TODO: listen protocols
-exec /usr/libexec/slapd -u ldap -g ldap -F "$SLAPDD_DIR" -h "ldapi:/// ldap:///" -d Stats
+exec /usr/libexec/slapd -u ldap -g ldap -F "$SLAPDD_DIR" -h "$LISTEN_URIS" -d Stats
