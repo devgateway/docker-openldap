@@ -30,10 +30,14 @@ pipeline {
         stage('Smoke test') {
           steps {
             script {
-              docker.withRegistry('http://localhost:5000') {
-                docker.image("${IMAGE}").inside('-u root') {
-                  sh "slapcat -n0"
-                }
+              def host_port = 389
+              def container
+              try {
+                container = docker.image("${IMAGE}").run("-p $host_port")
+                def port = container.port(host_port).tokenize(':')[1].toInteger()
+                echo port.toString()
+              } finally {
+                container.stop()
               }
             }
           }
