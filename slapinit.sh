@@ -2,7 +2,7 @@
 DATA_ROOT=/etc/openldap/config
 SLAPDD_DIR=/etc/openldap/slapd.d
 
-if [ "$1" != 'slapd' ]; then
+if [ "$1" != "slapd" ]; then
   exec "$@"
 fi
 

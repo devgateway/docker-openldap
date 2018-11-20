@@ -56,7 +56,8 @@ COPY slapinit.sh /slapinit.sh
 USER ldap
 WORKDIR /var/lib/ldap
 
-ENTRYPOINT ["/slapinit.sh", "slapd"]
+ENTRYPOINT ["/slapinit.sh"]
+CMD ["slapd"]
 
 VOLUME /var/lib/ldap
 VOLUME /etc/openldap/config
