@@ -1,6 +1,7 @@
 #!/bin/sh -ex
 DATA_ROOT=/etc/openldap/config
 SLAPDD_DIR=/etc/openldap/slapd.d
+: ${PRELOAD_SCHEMAS:=core cosine dyngroup inetorgperson misc nis ppolicy}
 
 if [ "$1" != "slapd" ]; then
   exec "$@"
@@ -21,9 +22,9 @@ olcAccess: to dn.subtree="cn=config"
 EOF
 
 echo Loading bundled schemas
-slapadd -F "$SLAPDD_DIR" -n 0 -l /etc/openldap/schema/core.ldif
-find /etc/openldap/schema -type f -name '*.ldif' ! -name core.ldif -print0 \
-  | xargs -0 -n 1 slapadd -F "$SLAPDD_DIR" -n 0 -l
+for SCHEMA in $PRELOAD_SCHEMAS; do
+    slapadd -F "$SLAPDD_DIR" -n 0 -l "/etc/openldap/schema/$SCHEMA.ldif"
+done
 
 if [ -d "$DATA_ROOT" ]; then
   echo Starting slapd on a local socket
