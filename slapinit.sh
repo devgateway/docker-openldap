@@ -18,7 +18,7 @@ dn: olcDatabase={0}config,cn=config
 objectClass: olcDatabaseConfig
 olcDatabase: {0}config
 olcAccess: to dn.subtree="cn=config"
-  by dn=gidNumber=900+uidNumber=900,cn=peercred,cn=external,cn=auth manage
+  by dn=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage
   by * none
 EOF
 
