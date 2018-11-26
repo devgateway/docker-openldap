@@ -5,9 +5,13 @@ pipeline {
   environment {
     HTTP_PROXY  = 'http://proxy.devgateway.org:3128/'
     HTTPS_PROXY = 'http://proxy.devgateway.org:3128/'
-    THIS_JOB = "<${env.BUILD_URL}|${env.JOB_NAME} ${env.BUILD_NUMBER}>"
+    THIS_JOB = "<$BUILD_URL|$JOB_NAME $BUILD_NUMBER>"
     APP_NAME = 'openldap'
-    IMAGE = "devgateway/${APP_NAME}:${env.BRANCH_NAME}"
+    IMAGE = "devgateway/$APP_NAME:$BRANCH_NAME"
+    LOCALHOST = '127.0.0.1'
+    LDAP_PORT = 389
+    ROOT_DN = 'cn=admin,dc=example,dc=org'
+    ROOT_PW = 'toor'
   }
 
   stages {
@@ -15,7 +19,7 @@ pipeline {
     stage('Build') {
       steps {
         script {
-          def image = docker.build("${IMAGE}")
+          def image = docker.build("$IMAGE")
           docker.withRegistry('http://localhost:5000') {
             image.push()
           }
@@ -30,15 +34,17 @@ pipeline {
         stage('Smoke test') {
           steps {
             script {
-              def host_ip = '127.0.0.1'
-              def cont_port = 389
+              def search_base = 'cn=Subschema'
+              def search_scope = 'base'
+              def search_filter = '(objectClass=subschema)'
+              def search_attrs = 'createTimestamp modifyTimestamp objectClass'
               def container
               try {
-                container = docker.image("${IMAGE}").run("-p $host_ip::$cont_port")
+                container = docker.image("$IMAGE").run("-p $LOCALHOST::$LDAP_PORT")
                 sleep 5
-                def host_port = container.port(cont_port).tokenize(':')[1]
-                sh "ldapsearch -h $host_ip -p $host_port -x -LLL -b cn=Subschema -s base " +
-                  '\'(objectClass=subschema)\' createTimestamp modifyTimestamp objectClass'
+                def mapped_port = container.port(env.LDAP_PORT).tokenize(':')[1]
+                sh "ldapsearch -h $LOCALHOST -p $mapped_port -x -LLL " +
+                  "-b $search_base -s $search_scope '$search_filter' $search_attrs"
               } finally {
                 container.stop()
               }
@@ -49,23 +55,19 @@ pipeline {
         stage('Simple DB') {
           steps {
             script {
-              def host_ip = '127.0.0.1'
-              def cont_port = 389
+              def search_base = 'dc=example,dc=org'
+              def search_scope = 'sub'
+              def search_filter = '(objectClass=inetOrgPerson)'
+              def test_dir = 'tests/simple-db'
+              def volumes = "$WORKSPACE/$test_dir/config:/etc/openldap/config:ro"
+              def ldif = "$test_dir/data/example.ldif"
               def container
               try {
-                def test_dir = 'tests/simple-db'
-                def volumes = "$WORKSPACE/$test_dir/config:/etc/openldap/config:ro"
-                container = docker.image("${IMAGE}").run("-p $host_ip::$cont_port -v $volumes")
+                container = docker.image("$IMAGE").run("-p $LOCALHOST::$LDAP_PORT -v $volumes")
                 sleep 5
-                def host_port = container.port(cont_port).tokenize(':')[1]
-                def root_dn = 'cn=admin,dc=example,dc=org'
-                def root_pw = 'toor'
-                def ldif = "$test_dir/data/example.ldif"
-                sh "ldapadd -h $host_ip -p $host_port -D $root_dn -w '$root_pw' -f $ldif"
-                def search_base = 'dc=example,dc=org'
-                def search_scope = 'sub'
-                def search_filter = '(objectClass=inetOrgPerson)'
-                sh "ldapsearch -h $host_ip -p $host_port -x -LLL " +
+                def mapped_port = container.port(env.LDAP_PORT).tokenize(':')[1]
+                sh "ldapadd -h $LOCALHOST -p $mapped_port -D $ROOT_DN -w '$ROOT_PW' -f $ldif"
+                sh "ldapsearch -h $LOCALHOST -p $mapped_port -x -LLL " +
                   "-b $search_base -s $search_scope '$search_filter'"
               } finally {
                 container.stop()
@@ -81,11 +83,11 @@ pipeline {
 
   post {
     success {
-      slackSend(message: "Built ${THIS_JOB}", color: "good")
+      slackSend(message: "Built $THIS_JOB", color: "good")
     }
 
     failure {
-      slackSend(message: "Failed ${THIS_JOB}", color: "danger")
+      slackSend(message: "Failed $THIS_JOB", color: "danger")
     }
   }
 }
