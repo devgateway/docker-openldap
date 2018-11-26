@@ -40,6 +40,7 @@ if [ -n "$(ls "$DATA_ROOT")" ]; then
     DB_DIR="$(grep -m 1 -i olcDbDirectory: "$LDIF" | cut -d ' ' -f 2)"
     if [ -n "$DB_DIR" ]; then
       mkdir -p -m 0750 "$DB_DIR"
+      chown ldap:ldap "$DB_DIR"
     fi
 
     if grep -qi changeType "$LDIF"; then
