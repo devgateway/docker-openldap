@@ -27,7 +27,7 @@ for SCHEMA in $PRELOAD_SCHEMAS; do
   su -s /usr/sbin/slapadd -- ldap -F "$SLAPDD_DIR" -n 0 -l "/etc/openldap/schema/$SCHEMA.ldif"
 done
 
-if [ -d "$DATA_ROOT" ]; then
+if [ -n "$(ls "$DATA_ROOT")" ]; then
   echo Starting slapd on a local socket
   /usr/libexec/slapd -u ldap -g ldap -F "$SLAPDD_DIR" -h ldapi:/// -d 0 &
   until [ -S "/run/ldapi" ]; do
@@ -52,6 +52,13 @@ if [ -d "$DATA_ROOT" ]; then
   echo Stopping slapd
   kill %1
   wait
+fi
+
+CA_CERT="$(slapcat -n0 -H 'ldap:///???(olcTLSCACertificateFile=*)' -o ldif-wrap=no
+  | grep -Fi olcTLSCACertificateFile
+  | cut -d ' ' -f 2-)"
+if [ -n "$CA_CERT" ]; then
+  echo "TLS_CACERT $CA_CERT" >> /etc/openldap/ldap.conf
 fi
 
 exec /usr/libexec/slapd -u ldap -g ldap -F "$SLAPDD_DIR" -h "$LISTEN_URIS" -d Stats
