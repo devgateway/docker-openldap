@@ -54,8 +54,8 @@ if [ -n "$(ls "$DATA_ROOT")" ]; then
   wait
 fi
 
-CA_CERT="$(slapcat -n0 -H 'ldap:///???(olcTLSCACertificateFile=*)' -o ldif-wrap=no
-  | grep -Fi olcTLSCACertificateFile
+CA_CERT="$(slapcat -n0 -H 'ldap:///???(olcTLSCACertificateFile=*)' -o ldif-wrap=no \
+  | grep -Fi olcTLSCACertificateFile \
   | cut -d ' ' -f 2-)"
 if [ -n "$CA_CERT" ]; then
   echo "TLS_CACERT $CA_CERT" >> /etc/openldap/ldap.conf
