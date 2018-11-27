@@ -41,7 +41,7 @@ pipeline {
               try {
                 container = docker.image("$IMAGE").run("-p $LOCALHOST::$LDAP_PORT")
                 sleep 5
-                def mapped_port = container.port(env.LDAP_PORT).tokenize(':')[1]
+                def mapped_port = container.port(env.LDAP_PORT.toInteger()).tokenize(':')[1]
                 sh "ldapsearch -h $LOCALHOST -p $mapped_port -x -LLL " +
                   "-b $search_base -s $search_scope '$search_filter' $search_attrs"
               } finally {
@@ -64,7 +64,7 @@ pipeline {
               try {
                 container = docker.image("$IMAGE").run("-p $LOCALHOST::$LDAP_PORT -v $volumes")
                 sleep 5
-                def mapped_port = container.port(env.LDAP_PORT).tokenize(':')[1]
+                def mapped_port = container.port(env.LDAP_PORT.toInteger()).tokenize(':')[1]
                 sh "ldapadd -h $LOCALHOST -p $mapped_port -D $ROOT_DN -w '$ROOT_PW' -f $ldif"
                 sh "ldapsearch -h $LOCALHOST -p $mapped_port -x -LLL " +
                   "-b $search_base -s $search_scope '$search_filter'"
