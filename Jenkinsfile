@@ -58,16 +58,65 @@ pipeline {
               def search_scope = 'sub'
               def search_filter = '(objectClass=inetOrgPerson)'
               def test_dir = 'tests/simple-db'
-              def volumes = "$WORKSPACE/$test_dir/config:/etc/openldap/config:ro"
+              def volume = "$WORKSPACE/$test_dir/config:/etc/openldap/config:ro"
               def ldif = "$test_dir/data/example.ldif"
               def container
               try {
-                container = docker.image("$IMAGE").run("-p $LOCALHOST::$LDAP_PORT -v $volumes")
+                container = docker.image("$IMAGE").run("-p $LOCALHOST::$LDAP_PORT -v $volume")
                 sleep 5
                 def mapped_port = container.port(env.LDAP_PORT.toInteger()).tokenize(':')[1]
-                sh "ldapadd -h $LOCALHOST -p $mapped_port -D $ROOT_DN -w '$ROOT_PW' -f $ldif"
-                sh "ldapsearch -h $LOCALHOST -p $mapped_port -x -LLL " +
-                  "-b $search_base -s $search_scope '$search_filter'"
+                sh [
+                  'ldapadd',
+                  "-h $LOCALHOST",
+                  "-p $mapped_port",
+                  "-D $ROOT_DN",
+                  "-w '$ROOT_PW'",
+                  "-f $ldif"
+                ].join(' ')
+                sh [
+                  'ldapsearch',
+                  '-x',
+                  '-LLL',
+                  "-h $LOCALHOST",
+                  "-p $mapped_port",
+                  "-b $search_base",
+                  "-s $search_scope",
+                  "'$search_filter'"
+                ].join(' ')
+              } finally {
+                container.stop()
+              }
+            }
+          }
+        }
+
+        stage('TLS') {
+          steps {
+            script {
+              def search_base = 'dc=example,dc=org'
+              def search_scope = 'sub'
+              def search_filter = '(objectClass=inetOrgPerson)'
+              def test_dir = 'tests/tls'
+              def volume = "$WORKSPACE/$test_dir/config:/etc/openldap/config:ro"
+              def ldif = "$test_dir/data/example.ldif"
+              def container
+              try {
+                def docker_args = [
+                  "-p $LOCALHOST::$LDAP_PORT",
+                  "-v $volume",
+                  '-e LISTEN_URIS=ldaps:///'
+                ].join(' ')
+                container = docker.image(env.IMAGE).run(docker_args)
+                sleep 5
+                def mapped_port = container.port(env.LDAP_PORT.toInteger()).tokenize(':')[1]
+                sh [
+                  "TLS_CACERT='$WORKSPACE/$test_dir/config/public.pem'",
+                  'ldapadd',
+                  "-H ldaps://$LOCALHOST:$mapped_port",
+                  "-D $ROOT_DN",
+                  "-w '$ROOT_PW'",
+                  "-f $ldif"
+                ].join(' ')
               } finally {
                 container.stop()
               }
