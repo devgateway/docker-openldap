@@ -82,10 +82,16 @@ pipeline {
 
   post {
     success {
-      slackSend(
-        message: "Built <$BUILD_URL|$JOB_NAME $BUILD_NUMBER>: $CHANGE_TITLE",
-        color: "good"
-      )
+      script {
+        def msg = sh(
+          returnStdout: true,
+          script: 'git log --oneline --format=%B -n 1 HEAD | head -n 1'
+        )
+        slackSend(
+          message: "Built <$BUILD_URL|$JOB_NAME $BUILD_NUMBER>: $msg",
+          color: "good"
+        )
+      }
     }
   }
 }
