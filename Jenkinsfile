@@ -9,6 +9,7 @@ pipeline {
     IMAGE = "devgateway/$APP_NAME:$BRANCH_NAME"
     LOCALHOST = '127.0.0.1'
     LDAP_PORT = 389
+    LDAPS_PORT = 636
     ROOT_DN = 'cn=admin,dc=example,dc=org'
     ROOT_PW = 'toor'
   }
@@ -102,13 +103,13 @@ pipeline {
               def container
               try {
                 def docker_args = [
-                  "-p $LOCALHOST::$LDAP_PORT",
+                  "-p $LOCALHOST::$LDAPS_PORT",
                   "-v $volume",
                   '-e LISTEN_URIS=ldaps:///'
                 ].join(' ')
                 container = docker.image(env.IMAGE).run(docker_args)
                 sleep 5
-                def mapped_port = container.port(env.LDAP_PORT.toInteger()).tokenize(':')[1]
+                def mapped_port = container.port(env.LDAPS_PORT.toInteger()).tokenize(':')[1]
                 sh [
                   "TLS_CACERT='$WORKSPACE/$test_dir/config/public.pem'",
                   'ldapadd',

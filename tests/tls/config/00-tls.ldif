@@ -1,0 +1,16 @@
+dn: cn=config
+changeType: modify
+replace: olcTLSCACertificateFile
+olcTLSCACertificateFile: /etc/openldap/config/public.pem
+-
+replace: olcTLSCertificateFile
+olcTLSCertificateFile: /etc/openldap/config/public.pem
+-
+replace: olcTLSCertificateKeyFile
+olcTLSCertificateKeyFile: /etc/openldap/config/private.pem
+-
+replace: olcTLSCipherSuite
+olcTLSCipherSuite: HIGH:TLSv1:!NULL
+-
+replace: olcTLSVerifyClient
+olcTLSVerifyClient: never
