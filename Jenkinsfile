@@ -5,7 +5,6 @@ pipeline {
   environment {
     HTTP_PROXY  = 'http://proxy.devgateway.org:3128/'
     HTTPS_PROXY = 'http://proxy.devgateway.org:3128/'
-    THIS_JOB = "<$BUILD_URL|$JOB_NAME $BUILD_NUMBER>"
     APP_NAME = 'openldap'
     IMAGE = "devgateway/$APP_NAME:$BRANCH_NAME"
     LOCALHOST = '127.0.0.1'
@@ -83,11 +82,10 @@ pipeline {
 
   post {
     success {
-      slackSend(message: "Built $THIS_JOB", color: "good")
-    }
-
-    failure {
-      slackSend(message: "Failed $THIS_JOB", color: "danger")
+      slackSend(
+        message: "Built <$BUILD_URL|$JOB_NAME $BUILD_NUMBER>: $CHANGE_TITLE",
+        color: "good"
+      )
     }
   }
 }
