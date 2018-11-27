@@ -3,3 +3,9 @@ objectClass: dcObject
 objectClass: organization
 o: ACME Inc
 dc: example
+
+dn: cn=nsure,dc=example,dc=org
+cn: nsure
+objectClass: inetOrgPerson
+gn: Not
+sn: Sure
