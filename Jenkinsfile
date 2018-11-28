@@ -68,34 +68,21 @@ pipeline {
 
         stage('TLS') {
           steps {
-            script {
-              def search_base = 'dc=example,dc=org'
-              def search_scope = 'sub'
-              def search_filter = '(objectClass=inetOrgPerson)'
-              def test_dir = 'tests/tls'
-              def volume = "$WORKSPACE/$test_dir/config:/etc/openldap/config:ro"
-              def ldif = "$test_dir/data/example.ldif"
-              def container
-              try {
-                def docker_args = [
-                  "-p $LOCALHOST::$LDAPS_PORT",
-                  "-v $volume",
-                  '-e LISTEN_URIS=ldaps:///'
-                ].join(' ')
-                container = docker.image(env.IMAGE).run(docker_args)
-                sleep 5
-                def mapped_port = container.port(env.LDAPS_PORT.toInteger()).tokenize(':')[1]
-                sh([
-                  "TLS_CACERT='$WORKSPACE/$test_dir/config/public.pem'",
-                  'ldapadd',
-                  "-H ldaps://$LOCALHOST:$mapped_port",
-                  "-D $ROOT_DN",
-                  "-w '$ROOT_PW'",
-                  "-f $ldif"
-                ].join(' '))
-              } finally {
-                container.stop()
-              }
+            withDockerContainer(
+              image: env.IMAGE,
+              args: "-u 0:0 -v $WORKSPACE/tests/tls/config:/etc/openldap/config:ro " +
+                '-e LISTEN_URIS=ldaps:///'
+            ) {
+              sh """
+                export LDAPTLS_REQCERT=allow
+                /slapinit.sh &
+                for i in \$(seq 60); do
+                  sleep 1
+                  ldapsearch -H ldaps://localhost -x -LLL -b cn=Subschema -s base \
+                      '(objectClass=subschema)' createTimestamp modifyTimestamp objectClass \
+                    && break
+                done
+              """
             }
           }
         }
