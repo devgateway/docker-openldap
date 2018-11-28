@@ -7,9 +7,6 @@ pipeline {
     HTTPS_PROXY = 'http://proxy.devgateway.org:3128/'
     APP_NAME = 'openldap'
     IMAGE = "devgateway/$APP_NAME:$BRANCH_NAME"
-    LOCALHOST = '127.0.0.1'
-    LDAP_PORT = 389
-    LDAPS_PORT = 636
     ROOT_DN = 'cn=admin,dc=example,dc=org'
     ROOT_PW = 'toor'
   }
