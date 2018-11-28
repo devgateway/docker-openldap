@@ -1,6 +1,10 @@
-#!/bin/sh -ex
+#!/bin/sh -e
 if [ "$1" != "slapd" ]; then
   exec "$@"
+fi
+
+if [ -n "$DEBUG" ]; then
+  set -x
 fi
 
 DATA_ROOT=/etc/openldap/config
@@ -8,7 +12,7 @@ SLAPDD_DIR=/etc/openldap/slapd.d
 : ${PRELOAD_SCHEMAS:=core cosine dyngroup inetorgperson misc nis ppolicy}
 : ${LISTEN_URIS:=ldap:///}
 
-echo Initializing cn=config database
+echo Bootstrapping the config database
 su -s /usr/sbin/slapadd -- ldap -F "$SLAPDD_DIR" -n 0 <<EOF
 dn: cn=config
 objectClass: olcGlobal
@@ -31,12 +35,13 @@ if [ -n "$(ls "$DATA_ROOT")" ]; then
   echo Starting slapd on a local socket
   /usr/libexec/slapd -u ldap -g ldap -F "$SLAPDD_DIR" -h ldapi:/// -d 0 &
   for i in $(seq 60); do
-    echo "Waiting for slapd to become operational..."
+    echo Waiting for slapd to become operational
     sleep 1
-    ldapsearch -LLL -H ldapi:/// -b cn=config -s base -A dn >/dev/null && break
+    ldapsearch -Q -LLL -H ldapi:/// -b cn=config -s base -A dn >/dev/null >/dev/null 2>&1 \
+      && break
   done
 
-  echo Setting up cn=config database
+  echo Setting up the config database
   find "$DATA_ROOT" -maxdepth 1 -type f -name '*.ldif' | sort | while read LDIF; do
     DB_DIR="$(grep -m 1 -i olcDbDirectory: "$LDIF" | cut -d ' ' -f 2)"
     if [ -n "$DB_DIR" ]; then
@@ -45,9 +50,9 @@ if [ -n "$(ls "$DATA_ROOT")" ]; then
     fi
 
     if grep -qi changeType "$LDIF"; then
-      ldapmodify -H ldapi:/// -f "$LDIF"
+      ldapmodify -Q -H ldapi:/// -f "$LDIF"
     else
-      ldapadd    -H ldapi:/// -f "$LDIF"
+      ldapadd    -Q -H ldapi:/// -f "$LDIF"
     fi
   done
 
@@ -60,6 +65,7 @@ CA_CERT="$(slapcat -n0 -H 'ldap:///???(olcTLSCACertificateFile=*)' -o ldif-wrap=
   | grep -Fi olcTLSCACertificateFile \
   | cut -d ' ' -f 2-)"
 if [ -n "$CA_CERT" ]; then
+  echo "Making $CA_CERT trusted by clients"
   echo "TLS_CACERT $CA_CERT" >> /etc/openldap/ldap.conf
 fi
 
