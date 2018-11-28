@@ -1,6 +1,6 @@
 FROM alpine:3.8
 
-ARG OPENLDAP_VERSION=2.4.46
+ARG OPENLDAP_VERSION
 ARG OPENLDAP_MIRROR=ftp://ftp.openldap.org/pub/OpenLDAP/openldap-release
 
 RUN set -x; \

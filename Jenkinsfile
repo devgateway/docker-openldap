@@ -6,6 +6,7 @@ pipeline {
     HTTP_PROXY  = 'http://proxy.devgateway.org:3128/'
     HTTPS_PROXY = 'http://proxy.devgateway.org:3128/'
     APP_NAME = 'openldap'
+    VERSION = '2.4.46'
     IMAGE = "devgateway/$APP_NAME:$BRANCH_NAME"
     ROOT_DN = 'cn=admin,dc=example,dc=org'
     ROOT_PW = 'toor'
@@ -16,7 +17,7 @@ pipeline {
     stage('Build') {
       steps {
         script {
-          def image = docker.build("$IMAGE")
+          def image = docker.build(env.IMAGE, "--build-arg=OPENLDAP_VERSION=$VERSION .")
           docker.withRegistry('http://localhost:5000') {
             image.push()
           }
