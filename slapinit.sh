@@ -11,6 +11,7 @@ DATA_ROOT=/etc/openldap/config
 SLAPDD_DIR=/etc/openldap/slapd.d
 : ${PRELOAD_SCHEMAS:=core cosine dyngroup inetorgperson misc nis ppolicy}
 : ${LISTEN_URIS:=ldap:///}
+: ${LOG_LEVEL:=Stats}
 
 echo Bootstrapping the config database
 su -s /usr/sbin/slapadd -- ldap -F "$SLAPDD_DIR" -n 0 <<EOF
@@ -69,4 +70,4 @@ if [ -n "$CA_CERT" ]; then
   echo "TLS_CACERT $CA_CERT" >> /etc/openldap/ldap.conf
 fi
 
-exec /usr/libexec/slapd -u ldap -g ldap -F "$SLAPDD_DIR" -h "$LISTEN_URIS" -d Stats
+exec /usr/libexec/slapd -u ldap -g ldap -F "$SLAPDD_DIR" -h "$LISTEN_URIS" -d $LOG_LEVEL
