@@ -28,26 +28,20 @@ pipeline {
     } // stage
 
     stage('Test') {
-      failFast true
       parallel {
 
         stage('Smoke test') {
           steps {
-            script {
-              def search_base = 'cn=Subschema'
-              def search_scope = 'base'
-              def search_filter = '(objectClass=subschema)'
-              def search_attrs = 'createTimestamp modifyTimestamp objectClass'
-              def container
-              try {
-                container = docker.image("$IMAGE").run("-p $LOCALHOST::$LDAP_PORT")
-                sleep 5
-                def mapped_port = container.port(env.LDAP_PORT.toInteger()).tokenize(':')[1]
-                sh "ldapsearch -h $LOCALHOST -p $mapped_port -x -LLL " +
-                  "-b $search_base -s $search_scope '$search_filter' $search_attrs"
-              } finally {
-                container.stop()
-              }
+            withDockerContainer(image: env.IMAGE, args: '-u 0:0') {
+              sh '''
+                /slapinit.sh &
+                for i in $(seq 60); do
+                  sleep 1
+                  ldapsearch -H ldap://localhost -x -LLL -b cn=Subschema -s base \
+                      '(objectClass=subschema)' createTimestamp modifyTimestamp objectClass \
+                    && break
+                done
+                '''
             }
           }
         }
