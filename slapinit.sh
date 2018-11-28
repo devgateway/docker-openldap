@@ -30,8 +30,8 @@ done
 if [ -n "$(ls "$DATA_ROOT")" ]; then
   echo Starting slapd on a local socket
   /usr/libexec/slapd -u ldap -g ldap -F "$SLAPDD_DIR" -h ldapi:/// -d 0 &
-  until [ -S "/run/ldapi" ]; do
-    echo "Waiting for socket $1"
+  until ldapsearch -LLL -H ldapi:/// -b cn=config -s base -A dn >/dev/null; do
+    echo "Waiting for slapd to become operational..."
     sleep 1
   done
 
