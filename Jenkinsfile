@@ -48,39 +48,21 @@ pipeline {
 
         stage('Simple DB') {
           steps {
-            script {
-              def search_base = 'dc=example,dc=org'
-              def search_scope = 'sub'
-              def search_filter = '(objectClass=inetOrgPerson)'
-              def test_dir = 'tests/simple-db'
-              def volume = "$WORKSPACE/$test_dir/config:/etc/openldap/config:ro"
-              def ldif = "$test_dir/data/example.ldif"
-              def container
-              try {
-                container = docker.image("$IMAGE").run("-p $LOCALHOST::$LDAP_PORT -v $volume")
-                sleep 5
-                def mapped_port = container.port(env.LDAP_PORT.toInteger()).tokenize(':')[1]
-                sh([
-                  'ldapadd',
-                  "-h $LOCALHOST",
-                  "-p $mapped_port",
-                  "-D $ROOT_DN",
-                  "-w '$ROOT_PW'",
-                  "-f $ldif"
-                ].join(' '))
-                sh([
-                  'ldapsearch',
-                  '-x',
-                  '-LLL',
-                  "-h $LOCALHOST",
-                  "-p $mapped_port",
-                  "-b $search_base",
-                  "-s $search_scope",
-                  "'$search_filter'"
-                ].join(' '))
-              } finally {
-                container.stop()
-              }
+            withDockerContainer(
+              image: env.IMAGE,
+              args: "-u 0:0 -v $WORKSPACE/tests/simple-db/config:/etc/openldap/config:ro"
+            ) {
+              sh """
+                export LDAPURI=ldap://localhost
+                /slapinit.sh &
+                for i in \$(seq 60); do
+                  sleep 1
+                  ldapsearch -x -b cn=Subschema -s base && break || :
+                done
+                ldapadd -D $ROOT_DN -w '$ROOT_PW' \
+                  -f "$WORKSPACE/tests/simple-db/config/data/example.ldif"
+                ldapsearch -x -LLL -b dc=example,dc=org '(objectClass=inetOrgPerson)'
+              """
             }
           }
         }
