@@ -57,10 +57,9 @@ pipeline {
                 /slapinit.sh &
                 for i in \$(seq 60); do
                   sleep 1
-                  ldapsearch -x -b cn=Subschema -s base && break || :
+                  ldapsearch -x -b cn=Subschema -s base > /dev/null && break || :
                 done
-                ldapadd -D $ROOT_DN -w '$ROOT_PW' \
-                  -f "$WORKSPACE/tests/simple-db/config/data/example.ldif"
+                ldapadd -D $ROOT_DN -w '$ROOT_PW' -f "$WORKSPACE/tests/simple-db/data/example.ldif"
                 ldapsearch -x -LLL -b dc=example,dc=org '(objectClass=inetOrgPerson)'
               """
             }
