@@ -42,11 +42,8 @@ RUN set -x; \
   && make install \
   && cd .. \
   && rm -rf openldap-${OPENLDAP_VERSION}.tgz openldap-${OPENLDAP_VERSION} \
-  && apk del .build-deps
-
-# TODO: merge with previous
-RUN set -x; \
-  rm -f /etc/openldap/slapd.conf \
+  && apk del .build-deps \
+  && rm -f /etc/openldap/slapd.conf \
   && for dir in /etc/openldap/slapd.d /etc/openldap/config /var/lib/ldap; do \
       mkdir -p -m 0750 "$dir" && chown ldap:ldap "$dir"; \
     done
