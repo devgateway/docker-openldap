@@ -1,4 +1,5 @@
 #!/bin/sh -e
+# Copyright 2018, Development Gateway, see COPYING
 if [ "$1" != "slapd" ]; then
   exec "$@"
 fi
@@ -50,7 +51,7 @@ if [ -n "$(ls "$DATA_ROOT")" ]; then
       chown ldap:ldap "$DB_DIR"
     fi
 
-    if grep -qi changeType "$LDIF"; then
+    if grep -qi '^changeType:' "$LDIF"; then
       ldapmodify -Q -H ldapi:/// -f "$LDIF"
     else
       ldapadd    -Q -H ldapi:/// -f "$LDIF"

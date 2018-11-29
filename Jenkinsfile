@@ -1,4 +1,5 @@
 #!/usr/bin/env groovy
+// Copyright 2018, Development Gateway, see COPYING
 pipeline {
   agent any
 

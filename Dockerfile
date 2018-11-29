@@ -1,3 +1,4 @@
+# Copyright 2018, Development Gateway, see COPYING
 FROM alpine:3.8
 
 ARG OPENLDAP_VERSION
