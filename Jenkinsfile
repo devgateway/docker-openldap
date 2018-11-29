@@ -7,7 +7,7 @@ pipeline {
     HTTPS_PROXY = 'http://proxy.devgateway.org:3128/'
     APP_NAME = 'openldap'
     VERSION = '2.4.46'
-    IMAGE = "devgateway/$APP_NAME:$BRANCH_NAME"
+    IMAGE = "devgateway/$APP_NAME:$VERSION"
     ROOT_DN = 'cn=admin,dc=example,dc=org'
     ROOT_PW = 'toor'
   }
@@ -17,10 +17,7 @@ pipeline {
     stage('Build') {
       steps {
         script {
-          def image = docker.build(env.IMAGE, "--build-arg=OPENLDAP_VERSION=$VERSION .")
-          docker.withRegistry('http://localhost:5000') {
-            image.push()
-          }
+          docker.build(env.IMAGE, "--build-arg=OPENLDAP_VERSION=$VERSION .")
         }
       }
     } // stage
@@ -87,6 +84,16 @@ pipeline {
 
       } // parallel
     } // Test
+
+    stage('Publish') {
+      steps {
+        script {
+          docker.withRegistry('', 'dockerhub-ssemenukha') {
+            docker.image(env.IMAGE).push()
+          }
+        }
+      }
+    } // stage
 
   } // stages
 
